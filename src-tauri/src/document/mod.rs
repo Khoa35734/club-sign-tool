@@ -1,0 +1,1 @@
+//! Document loading, metadata inspection, and page counting domain services.
