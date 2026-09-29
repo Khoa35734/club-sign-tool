@@ -1,6 +1,6 @@
 import type { JSX } from 'react';
 import { AppShell } from '@/app/AppShell';
-import { Button } from '@/components';
+import { Button, Toast } from '@/components';
 import { useDocumentStore } from '@/stores';
 import { useOpenFile, DropZone } from '@/features/document';
 
@@ -16,16 +16,8 @@ export function App(): JSX.Element {
   return (
     <AppShell title="Club Sign Tool" badge="MVP">
       {error && (
-        <div className="mb-4 flex w-full max-w-lg items-center justify-between rounded-lg border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200 shadow-md">
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={clearError}
-            className="ml-3 text-xs text-red-300 hover:text-white"
-            title="Đóng thông báo"
-          >
-            ✕
-          </button>
+        <div className="mb-4 w-full max-w-lg">
+          <Toast message={error} onClose={clearError} type="error" />
         </div>
       )}
 

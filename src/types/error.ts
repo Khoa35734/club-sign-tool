@@ -8,5 +8,6 @@ export type AppError =
   | { type: 'ConversionError'; message: string }
   | { type: 'PdfError'; message: string }
   | { type: 'InvalidPath'; message: string }
+  | { type: 'InvalidFile'; message: string }
   | { type: 'LibreOfficeNotFound'; message?: string }
   | { type: 'Cancelled'; message?: string };

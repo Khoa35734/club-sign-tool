@@ -5,6 +5,7 @@
 
 import { useState, useCallback } from 'react';
 import { openDocumentDialog } from '../services/fileDialogService';
+import { validateDocumentFile } from '../services/fileValidationService';
 import { useDocumentStore } from '@/stores';
 
 export interface UseOpenFileResult {
@@ -32,7 +33,8 @@ export function useOpenFile(): UseOpenFileResult {
     try {
       const selectedPath = await openDocumentDialog();
       if (selectedPath) {
-        setFilePath(selectedPath);
+        const validation = await validateDocumentFile(selectedPath);
+        setFilePath(validation.path, validation.fileSizeBytes);
       }
       return selectedPath;
     } catch (err: unknown) {

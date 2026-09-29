@@ -9,6 +9,7 @@ pub enum AppError {
     ConversionError(String),
     PdfError(String),
     InvalidPath(String),
+    InvalidFile(String),
     LibreOfficeNotFound,
     Cancelled,
 }
@@ -20,6 +21,7 @@ impl fmt::Display for AppError {
             Self::ConversionError(msg) => write!(f, "Conversion Error: {msg}"),
             Self::PdfError(msg) => write!(f, "PDF Error: {msg}"),
             Self::InvalidPath(msg) => write!(f, "Invalid Path: {msg}"),
+            Self::InvalidFile(msg) => write!(f, "Invalid File: {msg}"),
             Self::LibreOfficeNotFound => write!(f, "LibreOffice executable was not found on this system"),
             Self::Cancelled => write!(f, "Operation was cancelled by user"),
         }

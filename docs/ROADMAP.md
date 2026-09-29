@@ -30,7 +30,7 @@
   - *Verify:* App state successfully receives the selected file path.
 - [x] `FR-FILE-001` Implement Drag & Drop zone for opening files on the main window.
   - *Verify:* Dropping a `.pdf` file successfully extracts and stores the file path.
-- [ ] `FR-FILE-ERR` Implement file validation and friendly error handling for unreadable or 0-byte files.
+- [x] `FR-FILE-ERR` Implement file validation and friendly error handling for unreadable or 0-byte files.
   - *Verify:* Selecting a corrupted file displays a localized error toast without crashing.
 
 ---

@@ -4,7 +4,7 @@
  */
 
 import type { JSX } from 'react';
-import { Button } from '@/components';
+import { Button, Toast } from '@/components';
 import { useFileDrop } from '../hooks/useFileDrop';
 
 export interface DropZoneProps {
@@ -31,19 +31,8 @@ export function DropZone({
   return (
     <div className="flex w-full max-w-lg flex-col items-center">
       {error && (
-        <div
-          role="alert"
-          className="mb-4 flex w-full items-center justify-between rounded-lg border border-red-500/40 bg-red-950/40 px-4 py-3 text-sm text-red-200 shadow-md"
-        >
-          <span>{error}</span>
-          <button
-            type="button"
-            onClick={clearError}
-            className="ml-3 text-xs text-red-300 hover:text-white"
-            title="Đóng thông báo"
-          >
-            ✕
-          </button>
+        <div role="alert" className="mb-4 w-full">
+          <Toast message={error} onClose={clearError} type="error" />
         </div>
       )}
 

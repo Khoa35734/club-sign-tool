@@ -21,6 +21,7 @@ export function isAppError(error: unknown): error is AppError {
       'ConversionError',
       'PdfError',
       'InvalidPath',
+      'InvalidFile',
       'LibreOfficeNotFound',
       'Cancelled',
     ].includes(candidate.type)

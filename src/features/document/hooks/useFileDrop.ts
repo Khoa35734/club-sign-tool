@@ -6,12 +6,13 @@
 import { useState, useEffect, useCallback, type DragEvent } from 'react';
 import { useDocumentStore } from '@/stores';
 import { isSupportedDocument } from '@/utils/file';
+import { validateDocumentFile } from '../services/fileValidationService';
 
 export interface UseFileDropResult {
   isDragging: boolean;
   error: string | null;
   clearError: () => void;
-  processDroppedPath: (filePath: string) => boolean;
+  processDroppedPath: (filePath: string) => Promise<boolean>;
   onDragEnter: (e: DragEvent<HTMLElement>) => void;
   onDragOver: (e: DragEvent<HTMLElement>) => void;
   onDragLeave: (e: DragEvent<HTMLElement>) => void;
@@ -28,7 +29,7 @@ export function useFileDrop(): UseFileDropResult {
   }, []);
 
   const processDroppedPath = useCallback(
-    (filePath: string): boolean => {
+    async (filePath: string): Promise<boolean> => {
       setError(null);
       const cleanPath = filePath.trim();
       if (!cleanPath) {
@@ -43,13 +44,14 @@ export function useFileDrop(): UseFileDropResult {
       }
 
       try {
-        setFilePath(cleanPath);
+        const validation = await validateDocumentFile(cleanPath);
+        setFilePath(validation.path, validation.fileSizeBytes);
         return true;
       } catch (err: unknown) {
         const msg =
           err instanceof Error
             ? err.message
-            : 'Không thể mở tài liệu. Vui lòng thử lại.';
+            : 'Không thể mở tài liệu. Tệp tin bị lỗi hoặc không thể đọc.';
         setError(msg);
         return false;
       }
@@ -95,8 +97,13 @@ export function useFileDrop(): UseFileDropResult {
       const file = files[0];
       if (!file) return;
 
+      if (file.size === 0) {
+        setError('Tệp tin rỗng (0 bytes). Vui lòng chọn một tài liệu hợp lệ.');
+        return;
+      }
+
       const filePath = (file as unknown as { path?: string }).path || file.name;
-      processDroppedPath(filePath);
+      void processDroppedPath(filePath);
     },
     [processDroppedPath]
   );
@@ -123,7 +130,7 @@ export function useFileDrop(): UseFileDropResult {
               setIsDragging(false);
               const paths = event.payload.paths;
               if (paths && paths.length > 0 && paths[0]) {
-                processDroppedPath(paths[0]);
+                void processDroppedPath(paths[0]);
               }
             }
           });
