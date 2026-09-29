@@ -17,7 +17,7 @@
   - *Verify:* Selected approach is recorded in `docs/DECISIONS.md`.
 - [x] `FR-FOUND-001` Initialize Tauri v2 + React 19 + TypeScript + Tailwind CSS project skeleton.
   - *Verify:* `npm run lint` and `cargo check` pass with zero warnings.
-- [ ] `FR-FOUND-002` Configure strict TypeScript (`noImplicitAny`, strict null checks) and initial project directory structure according to architecture rules.
+- [x] `FR-FOUND-002` Configure strict TypeScript (`noImplicitAny`, strict null checks) and initial project directory structure according to architecture rules.
   - *Verify:* `npx tsc --noEmit` succeeds.
 
 ### Milestone M0 — Foundation Stable

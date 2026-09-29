@@ -81,11 +81,11 @@ describe('ARCH-DECISION-001: PDF Export Engine Evaluation Test Suite', () => {
       'ARCH-DECISION-001 must be marked [x] in docs/ROADMAP.md'
     );
 
-    // FR-FOUND-002 must NOT be checked yet (scope protection)
+    // Phase 1 items must NOT be checked yet (scope protection)
     assert.match(
       roadmap,
-      /- \[ \] `FR-FOUND-002`/,
-      'FR-FOUND-002 must remain unchecked [ ]'
+      /- \[ \] `FR-FILE-001`/,
+      'FR-FILE-001 must remain unchecked [ ]'
     );
   });
 
