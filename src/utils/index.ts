@@ -1,5 +1,6 @@
 /**
- * Pure Utility Functions Entry Point
+ * Utility functions entry point
  */
 
 export * from './format';
+export * from './file';

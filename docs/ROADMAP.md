@@ -26,7 +26,7 @@
 ---
 
 ### Phase 1 — Local File Opening
-- [ ] `FR-FILE-001`, `FR-FILE-002` Implement native file picker dialog restricted to `.pdf`, `.docx`, `.doc`.
+- [x] `FR-FILE-001`, `FR-FILE-002` Implement native file picker dialog restricted to `.pdf`, `.docx`, `.doc`.
   - *Verify:* App state successfully receives the selected file path.
 - [ ] `FR-FILE-001` Implement Drag & Drop zone for opening files on the main window.
   - *Verify:* Dropping a `.pdf` file successfully extracts and stores the file path.

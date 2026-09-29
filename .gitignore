@@ -12,6 +12,8 @@ out/
 
 # Rust / Cargo
 src-tauri/target/
+src-tauri/.cargo/
+.cargo/
 Cargo.lock
 
 # Tauri build artifacts
