@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import { AppShell } from '@/app/AppShell';
 import { Button } from '@/components';
 import { useDocumentStore } from '@/stores';
-import { useOpenFile } from '@/features/document';
+import { useOpenFile, DropZone } from '@/features/document';
 
 export function App(): JSX.Element {
   const activeDocument = useDocumentStore((state) => state.activeDocument);
@@ -30,29 +30,11 @@ export function App(): JSX.Element {
       )}
 
       {!activeDocument ? (
-        <div className="flex max-w-md flex-col items-center justify-center rounded-xl border border-dashed border-slate-700 bg-slate-800/40 p-8 text-center shadow-lg">
-          <div className="mb-4 text-4xl">📄</div>
-          <h2 className="mb-2 text-lg font-medium text-slate-200">
-            Sẵn sàng mở tài liệu
-          </h2>
-          <p className="mb-6 text-sm text-slate-400">
-            Chọn hoặc kéo thả tài liệu PDF hoặc Word (.docx, .doc) vào đây để bắt đầu ký duyệt.
-          </p>
-          <div className="mb-6 flex gap-3">
-            <Button
-              variant="primary"
-              size="md"
-              onClick={handleSelectFile}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Đang mở hộp thoại...' : 'Chọn tệp từ máy'}
-            </Button>
-          </div>
-          <div className="flex flex-col items-center gap-1 text-xs text-slate-500">
-            <span>Hỗ trợ: PDF, DOCX, DOC</span>
-            <span>🔒 Hoạt động 100% ngoại tuyến (Air-Gapped)</span>
-          </div>
-        </div>
+        <DropZone
+          onOpenFile={handleSelectFile}
+          isLoading={isLoading}
+          buttonLabel="Chọn tệp từ máy"
+        />
       ) : (
         <div className="flex w-full max-w-lg flex-col rounded-xl border border-slate-700 bg-slate-800/80 p-6 shadow-xl backdrop-blur-sm">
           <div className="mb-4 flex items-center justify-between border-b border-slate-700/60 pb-3">
@@ -92,6 +74,11 @@ export function App(): JSX.Element {
           </div>
         </div>
       )}
+
+      <div className="mt-8 flex items-center justify-center gap-2 text-xs text-slate-500">
+        <span>🔒</span>
+        <span>Bảo mật dữ liệu: Hoạt động 100% ngoại tuyến (Air-Gapped)</span>
+      </div>
     </AppShell>
   );
 }

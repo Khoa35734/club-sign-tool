@@ -4,3 +4,5 @@
 
 export * from './services/fileDialogService';
 export * from './hooks/useOpenFile';
+export * from './hooks/useFileDrop';
+export * from './components/DropZone';
