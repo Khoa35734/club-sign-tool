@@ -4,6 +4,7 @@
  */
 
 export * from './canvas';
+export * from './editor';
 export * from './document';
 export * from './assets';
 export * from './settings';

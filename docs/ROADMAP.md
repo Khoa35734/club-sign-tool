@@ -55,7 +55,7 @@
 ---
 
 ### Phase 3 — Editor Coordinate Foundation *(CRITICAL)*
-- [ ] `FR-COORD-001` Define the invariant coordinate model: Normalized coordinates (`0.0` to `1.0`).
+- [x] `FR-COORD-001` Define the invariant coordinate model: Normalized coordinates (`0.0` to `1.0`).
   - *Verify:* `EditorObject` type is defined in TypeScript with `x, y, width, height` strictly documented as normalized.
 - [ ] `FR-COORD-002` Implement pure conversion functions: `normalizedToScreen` and `screenToNormalized`.
   - *Verify:* Unit tests demonstrate perfect round-trip conversion at 25%, 50%, 100%, 150%, 200%, and 300% zoom levels.

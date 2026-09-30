@@ -6,3 +6,4 @@ export * from './format';
 export * from './file';
 export * from './pdfRender';
 export * from './zoom';
+export * from './coordinates';

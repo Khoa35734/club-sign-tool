@@ -630,4 +630,4 @@ Now:
 8. update the roadmap if truly complete;
 9. report the result.
 
-Do not ask for confirmation unless a destructive or genuinely ambiguous product decision is unavoidable.
+Do not ask for confirmation unless a destructive or genuinely ambiguous product decision is unavoidable. Check code final and commit & push

@@ -3,9 +3,12 @@
  * Reference: docs/SRS.md Section 14
  */
 
+import type { NormalizedCoordinates } from './editor';
+
+export type { EditorObject, EditorObjectType, NormalizedCoordinates } from './editor';
 export type ObjectType = 'signature' | 'stamp' | 'text' | 'date';
 
-export interface BasePlacementObject {
+export interface BasePlacementObject extends NormalizedCoordinates {
   /** UUID v4 identifier */
   id: string;
   /** Type of placement object */
