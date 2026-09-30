@@ -4,7 +4,13 @@
  * Rules: .agents/rules/pdf-editor.md Section 1
  */
 
-import type { NormalizedCoordinates } from '@/types/editor';
+import type {
+  NormalizedCoordinates,
+  ScreenCoordinates,
+  NormalizedPoint,
+  ScreenPoint,
+  RenderedPageDimensions,
+} from '@/types/editor';
 
 /** Small epsilon tolerance for floating-point boundary checks */
 export const COORDINATE_EPSILON = 1e-6;
@@ -98,3 +104,230 @@ export function createNormalizedCoordinates(
 ): NormalizedCoordinates {
   return clampNormalizedRect({ x, y, width, height });
 }
+
+/**
+ * Options for coordinate conversion.
+ */
+export interface CoordinateConversionOptions {
+  /**
+   * Whether to round normalized coordinate results to 6 decimal places.
+   * Defaults to true to eliminate IEEE 754 precision drift.
+   */
+  round?: boolean;
+  /**
+   * Whether to clamp coordinates within canonical bounds [0.0, 1.0].
+   * Defaults to false to allow detecting or handling temporary out-of-bounds drag positions.
+   */
+  clamp?: boolean;
+}
+
+/**
+ * Converts normalized coordinates [0.0 - 1.0] to screen pixel coordinates
+ * based on current rendered page dimensions (canonical page size * zoom).
+ *
+ * Mathematical Formula (SRS Section 13.2):
+ * X_screen = x_norm * W_rendered_page
+ * Y_screen = y_norm * H_rendered_page
+ * Width_screen = width_norm * W_rendered_page
+ * Height_screen = height_norm * H_rendered_page
+ */
+export function normalizedToScreen(
+  coords: NormalizedCoordinates,
+  pageDimensions: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number }
+): ScreenCoordinates;
+export function normalizedToScreen(
+  coords: NormalizedCoordinates,
+  renderedWidth: number,
+  renderedHeight: number
+): ScreenCoordinates;
+export function normalizedToScreen(
+  coords: NormalizedCoordinates,
+  dimOrWidth: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number } | number,
+  maybeHeight?: number
+): ScreenCoordinates {
+  let width = 0;
+  let height = 0;
+
+  if (typeof dimOrWidth === 'number') {
+    width = dimOrWidth;
+    height = typeof maybeHeight === 'number' ? maybeHeight : 0;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    width = 'renderedWidth' in dimOrWidth ? dimOrWidth.renderedWidth : dimOrWidth.width;
+    height = 'renderedHeight' in dimOrWidth ? dimOrWidth.renderedHeight : dimOrWidth.height;
+  }
+
+  return {
+    x: coords.x * width,
+    y: coords.y * height,
+    width: coords.width * width,
+    height: coords.height * height,
+  };
+}
+
+/**
+ * Converts screen pixel coordinates to normalized coordinates [0.0 - 1.0]
+ * based on current rendered page dimensions.
+ *
+ * Mathematical Formula (SRS Section 13.2):
+ * x_norm = X_screen / W_rendered_page
+ * y_norm = Y_screen / H_rendered_page
+ * width_norm = Width_screen / W_rendered_page
+ * height_norm = Height_screen / H_rendered_page
+ */
+export function screenToNormalized(
+  screen: ScreenCoordinates,
+  pageDimensions: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number },
+  options?: CoordinateConversionOptions
+): NormalizedCoordinates;
+export function screenToNormalized(
+  screen: ScreenCoordinates,
+  renderedWidth: number,
+  renderedHeight: number,
+  options?: CoordinateConversionOptions
+): NormalizedCoordinates;
+export function screenToNormalized(
+  screen: ScreenCoordinates,
+  dimOrWidth: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number } | number,
+  maybeHeightOrOptions?: number | CoordinateConversionOptions,
+  maybeOptions?: CoordinateConversionOptions
+): NormalizedCoordinates {
+  let width = 0;
+  let height = 0;
+  let options: CoordinateConversionOptions | undefined;
+
+  if (typeof dimOrWidth === 'number') {
+    width = dimOrWidth;
+    height = typeof maybeHeightOrOptions === 'number' ? maybeHeightOrOptions : 0;
+    options = maybeOptions;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    width = 'renderedWidth' in dimOrWidth ? dimOrWidth.renderedWidth : dimOrWidth.width;
+    height = 'renderedHeight' in dimOrWidth ? dimOrWidth.renderedHeight : dimOrWidth.height;
+    if (typeof maybeHeightOrOptions === 'object' && maybeHeightOrOptions !== null) {
+      options = maybeHeightOrOptions;
+    }
+  }
+
+  if (width <= 0 || height <= 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+
+  let rawX = screen.x / width;
+  let rawY = screen.y / height;
+  let rawW = screen.width / width;
+  let rawH = screen.height / height;
+
+  const shouldRound = options?.round ?? true;
+  if (shouldRound) {
+    rawX = roundNormalized(rawX);
+    rawY = roundNormalized(rawY);
+    rawW = roundNormalized(rawW);
+    rawH = roundNormalized(rawH);
+  }
+
+  const result: NormalizedCoordinates = {
+    x: rawX,
+    y: rawY,
+    width: rawW,
+    height: rawH,
+  };
+
+  if (options?.clamp) {
+    return clampNormalizedRect(result);
+  }
+
+  return result;
+}
+
+/**
+ * Converts a normalized single point [0.0 - 1.0] to screen pixel coordinates.
+ */
+export function normalizedPointToScreen(
+  point: NormalizedPoint,
+  renderedWidth: number,
+  renderedHeight: number
+): ScreenPoint;
+export function normalizedPointToScreen(
+  point: NormalizedPoint,
+  pageDimensions: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number }
+): ScreenPoint;
+export function normalizedPointToScreen(
+  point: NormalizedPoint,
+  dimOrWidth: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number } | number,
+  maybeHeight?: number
+): ScreenPoint {
+  let width = 0;
+  let height = 0;
+
+  if (typeof dimOrWidth === 'number') {
+    width = dimOrWidth;
+    height = typeof maybeHeight === 'number' ? maybeHeight : 0;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    width = 'renderedWidth' in dimOrWidth ? dimOrWidth.renderedWidth : dimOrWidth.width;
+    height = 'renderedHeight' in dimOrWidth ? dimOrWidth.renderedHeight : dimOrWidth.height;
+  }
+
+  return {
+    x: point.x * width,
+    y: point.y * height,
+  };
+}
+
+/**
+ * Converts a screen pixel point to a normalized point [0.0 - 1.0].
+ */
+export function screenPointToNormalized(
+  point: ScreenPoint,
+  renderedWidth: number,
+  renderedHeight: number,
+  options?: CoordinateConversionOptions
+): NormalizedPoint;
+export function screenPointToNormalized(
+  point: ScreenPoint,
+  pageDimensions: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number },
+  options?: CoordinateConversionOptions
+): NormalizedPoint;
+export function screenPointToNormalized(
+  point: ScreenPoint,
+  dimOrWidth: RenderedPageDimensions | { renderedWidth: number; renderedHeight: number } | number,
+  maybeHeightOrOptions?: number | CoordinateConversionOptions,
+  maybeOptions?: CoordinateConversionOptions
+): NormalizedPoint {
+  let width = 0;
+  let height = 0;
+  let options: CoordinateConversionOptions | undefined;
+
+  if (typeof dimOrWidth === 'number') {
+    width = dimOrWidth;
+    height = typeof maybeHeightOrOptions === 'number' ? maybeHeightOrOptions : 0;
+    options = maybeOptions;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    width = 'renderedWidth' in dimOrWidth ? dimOrWidth.renderedWidth : dimOrWidth.width;
+    height = 'renderedHeight' in dimOrWidth ? dimOrWidth.renderedHeight : dimOrWidth.height;
+    if (typeof maybeHeightOrOptions === 'object' && maybeHeightOrOptions !== null) {
+      options = maybeHeightOrOptions;
+    }
+  }
+
+  if (width <= 0 || height <= 0) {
+    return { x: 0, y: 0 };
+  }
+
+  let rawX = point.x / width;
+  let rawY = point.y / height;
+
+  const shouldRound = options?.round ?? true;
+  if (shouldRound) {
+    rawX = roundNormalized(rawX);
+    rawY = roundNormalized(rawY);
+  }
+
+  if (options?.clamp) {
+    return {
+      x: clampNormalizedCoordinate(rawX),
+      y: clampNormalizedCoordinate(rawY),
+    };
+  }
+
+  return { x: rawX, y: rawY };
+}
+

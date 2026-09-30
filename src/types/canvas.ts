@@ -5,7 +5,15 @@
 
 import type { NormalizedCoordinates } from './editor';
 
-export type { EditorObject, EditorObjectType, NormalizedCoordinates } from './editor';
+export type {
+  EditorObject,
+  EditorObjectType,
+  NormalizedCoordinates,
+  ScreenCoordinates,
+  NormalizedPoint,
+  ScreenPoint,
+  RenderedPageDimensions,
+} from './editor';
 export type ObjectType = 'signature' | 'stamp' | 'text' | 'date';
 
 export interface BasePlacementObject extends NormalizedCoordinates {

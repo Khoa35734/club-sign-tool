@@ -28,6 +28,50 @@ export interface NormalizedCoordinates {
 }
 
 /**
+ * 2D Screen pixel coordinates / bounding box relative to rendered page container.
+ */
+export interface ScreenCoordinates {
+  /** X position in screen pixels relative to page container top-left */
+  x: number;
+  /** Y position in screen pixels relative to page container top-left */
+  y: number;
+  /** Width in screen pixels */
+  width: number;
+  /** Height in screen pixels */
+  height: number;
+}
+
+/**
+ * Single 2D point in normalized coordinates [0.0, 1.0].
+ */
+export interface NormalizedPoint {
+  /** Distance from left edge of page divided by page width, in range [0.0, 1.0] */
+  x: number;
+  /** Distance from top edge of page divided by page height, in range [0.0, 1.0] */
+  y: number;
+}
+
+/**
+ * Single 2D point in screen pixels relative to page container top-left.
+ */
+export interface ScreenPoint {
+  /** X position in screen pixels */
+  x: number;
+  /** Y position in screen pixels */
+  y: number;
+}
+
+/**
+ * Rendered dimensions of a PDF page in screen pixels.
+ */
+export interface RenderedPageDimensions {
+  /** Rendered width of the page in screen pixels (typically widthPt * zoom) */
+  width: number;
+  /** Rendered height of the page in screen pixels (typically heightPt * zoom) */
+  height: number;
+}
+
+/**
  * Valid object types that can be placed on a document page.
  */
 export type EditorObjectType = 'signature' | 'stamp' | 'text' | 'date';
