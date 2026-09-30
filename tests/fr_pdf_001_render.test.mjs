@@ -141,13 +141,12 @@ describe('FR-PDF-001: PDF Page 1 High-Resolution Canvas Rendering Test Suite', (
     assert.match(docIndex, /export \* from '\.\/services\/pdfRenderService'/, 'document/index.ts must export pdfRenderService');
   });
 
-  test('App component mounts PdfPageView for active PDF documents', () => {
+  test('App component mounts PDF viewport for active PDF documents', () => {
     const content = fs.readFileSync(appPath, 'utf8');
 
-    assert.match(content, /PdfPageView/, 'App must import and use PdfPageView');
-    assert.match(content, /activeDocument\.fileType === 'pdf'/, 'App must render PdfPageView when active document is PDF');
-    assert.match(content, /source=\{activeDocument\.filePath\}/, 'App must pass active document path to PdfPageView');
-    assert.match(content, /pageNumber=\{1\}/, 'App must request page 1');
+    assert.match(content, /PdfPageView|PdfDocumentViewport/, 'App must import and use PDF viewer');
+    assert.match(content, /activeDocument\.fileType === 'pdf'/, 'App must render viewer when active document is PDF');
+    assert.match(content, /source=\{activeDocument\.filePath\}/, 'App must pass active document path');
   });
 
   test('Functional simulation: PDF.js renders Page 1 at min 150 DPI viewport scale', async () => {

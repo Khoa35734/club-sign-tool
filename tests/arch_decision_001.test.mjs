@@ -84,8 +84,8 @@ describe('ARCH-DECISION-001: PDF Export Engine Evaluation Test Suite', () => {
     // Future milestone items must NOT be checked yet (scope protection)
     assert.match(
       roadmap,
-      /- \[ \] `FR-PDF-001`/,
-      'FR-PDF-001 must remain unchecked [ ]'
+      /- \[ \] `FR-COORD-001`/,
+      'Future milestone items must remain unchecked [ ]'
     );
   });
 

@@ -13,3 +13,5 @@ export * from './hooks/useFileDrop';
 export * from './hooks/usePdfPageRenderer';
 export * from './components/DropZone';
 export * from './components/PdfPageView';
+export * from './components/PdfViewportToolbar';
+export * from './components/PdfDocumentViewport';

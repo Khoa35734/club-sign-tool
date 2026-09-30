@@ -40,7 +40,7 @@
   - *Verify:* App state correctly reflects the page count and dimensions of the opened PDF.
 - [x] `FR-PDF-001` Render the first PDF page onto a canvas at high resolution (min 150 DPI).
   - *Verify:* PDF page visually renders.
-- [ ] `FR-PDF-005` Implement vertical scrolling and multi-page rendering for the document viewport.
+- [x] `FR-PDF-005` Implement vertical scrolling and multi-page rendering for the document viewport.
   - *Verify:* User can scroll through a multi-page PDF.
 - [ ] `FR-PDF-002`, `FR-PDF-003` Implement lazy-rendered page thumbnails sidebar.
   - *Verify:* Thumbnails load efficiently; clicking a thumbnail scrolls the main viewport to that page.

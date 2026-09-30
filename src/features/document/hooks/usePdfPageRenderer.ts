@@ -19,6 +19,7 @@ export interface UsePdfPageRendererOptions {
   dpi?: number;
   zoom?: number;
   rotation?: number;
+  enabled?: boolean;
   onRenderSuccess?: (result: RenderPdfPageResult) => void;
   onRenderError?: (error: Error) => void;
 }
@@ -40,6 +41,7 @@ export function usePdfPageRenderer(
     dpi = MIN_PDF_RENDER_DPI,
     zoom = 1.0,
     rotation,
+    enabled = true,
     onRenderSuccess,
     onRenderError,
   } = options;
@@ -72,7 +74,7 @@ export function usePdfPageRenderer(
     const currentSource = source;
     const canvas = canvasRef.current;
 
-    if (!currentSource || !canvas) {
+    if (!enabled || !currentSource || !canvas) {
       return;
     }
 
@@ -150,6 +152,7 @@ export function usePdfPageRenderer(
     dpi,
     zoom,
     rotation,
+    enabled,
     retryTrigger,
     onRenderSuccess,
     onRenderError,

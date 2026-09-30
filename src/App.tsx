@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import { AppShell } from '@/app/AppShell';
 import { Button, Toast } from '@/components';
 import { useDocumentStore } from '@/stores';
-import { useOpenFile, DropZone, PdfPageView } from '@/features/document';
+import { useOpenFile, DropZone, PdfDocumentViewport } from '@/features/document';
 
 export function App(): JSX.Element {
   const activeDocument = useDocumentStore((state) => state.activeDocument);
@@ -102,12 +102,10 @@ export function App(): JSX.Element {
           </div>
 
           {activeDocument.fileType === 'pdf' && (
-            <div className="flex w-full flex-col items-center justify-center rounded-xl border border-slate-800 bg-slate-900/70 p-6 shadow-2xl backdrop-blur-md">
-              <PdfPageView
-                source={activeDocument.filePath}
-                pageNumber={1}
-              />
-            </div>
+            <PdfDocumentViewport
+              source={activeDocument.filePath}
+              pages={activeDocument.pages}
+            />
           )}
         </div>
       )}
