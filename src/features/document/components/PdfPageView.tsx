@@ -39,7 +39,9 @@ export function PdfPageView({
 }: PdfPageViewProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [isVisible, setIsVisible] = useState(!lazy);
+  const [isVisible, setIsVisible] = useState(
+    !lazy || typeof IntersectionObserver === 'undefined'
+  );
 
   const isRotated90or270 = rotation === 90 || rotation === 270;
   const orientedWidthPt = isRotated90or270 ? heightPt : widthPt;
@@ -48,33 +50,44 @@ export function PdfPageView({
   const displayHeight = Math.max(1, Math.round(orientedHeightPt * zoom));
 
   useEffect(() => {
-    if (!lazy || isVisible) {
-      return;
-    }
-
-    if (typeof IntersectionObserver === 'undefined') {
-      return;
-    }
-
+    if (!lazy || isVisible) return;
     const element = containerRef.current;
-    if (!element) {
-      return;
-    }
+    if (!element || typeof IntersectionObserver === 'undefined') return;
+
+    const scrollContainer = element.closest<HTMLElement>(
+      '[data-testid="pdf-document-viewport"]'
+    );
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting) {
+        if (entries.some((entry) => entry.isIntersecting)) {
           setIsVisible(true);
           observer.disconnect();
         }
       },
-      { rootMargin: '300px 0px' }
+      {
+        root: scrollContainer ?? null,
+        rootMargin: '600px 0px',
+      }
     );
 
     observer.observe(element);
 
+    const handleScroll = (): void => {
+      if (!scrollContainer) return;
+      const rect = element.getBoundingClientRect();
+      const containerRect = scrollContainer.getBoundingClientRect();
+      if (rect.top <= containerRect.bottom + 600 && rect.bottom >= containerRect.top - 600) {
+        setIsVisible(true);
+        observer.disconnect();
+      }
+    };
+
+    scrollContainer?.addEventListener('scroll', handleScroll, { passive: true });
+
     return () => {
       observer.disconnect();
+      scrollContainer?.removeEventListener('scroll', handleScroll);
     };
   }, [lazy, isVisible]);
 

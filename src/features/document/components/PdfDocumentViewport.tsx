@@ -170,7 +170,7 @@ export function PdfDocumentViewport({
                     dpi={dpi}
                     zoom={effectiveZoom}
                     rotation={page.rotation}
-                    lazy={true}
+                    lazy={pages.length > 5 ? page.pageNumber > 2 : false}
                   />
                 </div>
               ))}
