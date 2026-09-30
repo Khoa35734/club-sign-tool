@@ -42,7 +42,7 @@
   - *Verify:* PDF page visually renders.
 - [x] `FR-PDF-005` Implement vertical scrolling and multi-page rendering for the document viewport.
   - *Verify:* User can scroll through a multi-page PDF.
-- [ ] `FR-PDF-002`, `FR-PDF-003` Implement lazy-rendered page thumbnails sidebar.
+- [x] `FR-PDF-002`, `FR-PDF-003` Implement lazy-rendered page thumbnails sidebar.
   - *Verify:* Thumbnails load efficiently; clicking a thumbnail scrolls the main viewport to that page.
 - [ ] `FR-PDF-004` Add Zoom controls (25% to 400%).
   - *Verify:* Canvas scales appropriately via buttons and `Ctrl + Scroll`.

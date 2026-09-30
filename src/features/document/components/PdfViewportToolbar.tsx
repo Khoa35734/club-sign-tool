@@ -14,6 +14,8 @@ export interface PdfViewportToolbarProps {
   viewMode: ViewportMode;
   onPageChange: (newPage: number) => void;
   onViewModeChange: (newMode: ViewportMode) => void;
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
   className?: string;
 }
 
@@ -23,6 +25,8 @@ export function PdfViewportToolbar({
   viewMode,
   onPageChange,
   onViewModeChange,
+  isSidebarOpen = true,
+  onToggleSidebar,
   className = '',
 }: PdfViewportToolbarProps): JSX.Element {
   const [pageInput, setPageInput] = useState(String(currentPage));
@@ -49,39 +53,59 @@ export function PdfViewportToolbar({
       data-testid="pdf-viewport-toolbar"
       className={`flex items-center justify-between gap-3 rounded-lg border border-slate-700/80 bg-slate-800/90 px-4 py-2 shadow-md backdrop-blur-sm ${className}`}
     >
-      {/* View Mode Toggle */}
-      <div className="flex items-center gap-1 rounded-md bg-slate-900/60 p-1 border border-slate-700/50">
-        <button
-          type="button"
-          data-testid="viewport-mode-continuous"
-          onClick={() => onViewModeChange('continuous')}
-          className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-            viewMode === 'continuous'
-              ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-          title="Chế độ cuộn dọc liên tục"
-        >
-          <span>📜</span>
-          <span>Cuộn liên tục</span>
-        </button>
-        <button
-          type="button"
-          data-testid="viewport-mode-single"
-          onClick={() => onViewModeChange('single')}
-          className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
-            viewMode === 'single'
-              ? 'bg-indigo-600 text-white shadow-sm'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-          title="Chế độ xem từng trang"
-        >
-          <span>📄</span>
-          <span>Từng trang</span>
-        </button>
+      {/* Left controls: Sidebar toggle & View Mode */}
+      <div className="flex items-center gap-2">
+        {onToggleSidebar && (
+          <button
+            type="button"
+            data-testid="toolbar-sidebar-toggle"
+            onClick={onToggleSidebar}
+            className={`flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium transition-colors ${
+              isSidebarOpen
+                ? 'border-indigo-500/50 bg-indigo-600/20 text-indigo-300'
+                : 'border-slate-700/60 bg-slate-900/60 text-slate-400 hover:text-slate-200'
+            }`}
+            title={isSidebarOpen ? 'Ẩn thanh trang thu nhỏ' : 'Hiện thanh trang thu nhỏ'}
+            aria-label="Chuyển đổi thanh trang thu nhỏ"
+          >
+            <span>📑</span>
+            <span className="hidden sm:inline">Trang</span>
+          </button>
+        )}
+
+        <div className="flex items-center gap-1 rounded-md bg-slate-900/60 p-1 border border-slate-700/50">
+          <button
+            type="button"
+            data-testid="viewport-mode-continuous"
+            onClick={() => onViewModeChange('continuous')}
+            className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
+              viewMode === 'continuous'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+            title="Chế độ cuộn dọc liên tục"
+          >
+            <span>📜</span>
+            <span className="hidden sm:inline">Cuộn liên tục</span>
+          </button>
+          <button
+            type="button"
+            data-testid="viewport-mode-single"
+            onClick={() => onViewModeChange('single')}
+            className={`flex items-center gap-1.5 rounded px-2.5 py-1 text-xs font-medium transition-colors ${
+              viewMode === 'single'
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+            title="Chế độ xem từng trang"
+          >
+            <span>📄</span>
+            <span className="hidden sm:inline">Từng trang</span>
+          </button>
+        </div>
       </div>
 
-      {/* Page Navigation & Indicator */}
+      {/* Right controls: Page Navigation & Indicator */}
       <div
         data-testid="viewport-page-indicator"
         className="flex items-center gap-2 text-xs text-slate-300"
