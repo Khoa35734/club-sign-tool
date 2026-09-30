@@ -3,8 +3,16 @@
  * Reference: docs/ARCHITECTURE.md Section 3 & .agents/rules/architecture.md Section 2
  */
 
-import { invoke } from '@tauri-apps/api/core';
 import type { AppError } from '@/types';
+
+/**
+ * Checks whether the app is running inside a Tauri webview context.
+ */
+function isTauriEnvironment(): boolean {
+  return (
+    typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window
+  );
+}
 
 /**
  * Type guard to check if an unknown error object conforms to the AppError discriminated union
@@ -45,13 +53,26 @@ export function normalizeAppError(error: unknown): AppError {
 }
 
 /**
- * Safe wrapper around Tauri's invoke command
+ * Safe wrapper around Tauri's invoke command.
+ * Uses a dynamic import so the module can load safely outside the Tauri webview.
  */
 export async function safeInvoke<T>(
   command: string,
   args?: Record<string, unknown>
 ): Promise<{ ok: true; data: T } | { ok: false; error: AppError }> {
+  if (!isTauriEnvironment()) {
+    return {
+      ok: false,
+      error: {
+        type: 'IoError',
+        message:
+          'Ứng dụng không chạy trong môi trường Tauri. Vui lòng khởi chạy bằng lệnh "npm run tauri dev".',
+      },
+    };
+  }
+
   try {
+    const { invoke } = await import('@tauri-apps/api/core');
     const result = await invoke<T>(command, args);
     return { ok: true, data: result };
   } catch (err: unknown) {

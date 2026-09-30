@@ -1,6 +1,7 @@
 //! Document command handlers for Tauri IPC.
 
 use crate::document::dialog::pick_document_file;
+use crate::document::reader::read_document_bytes as domain_read_document_bytes;
 use crate::document::validation::{validate_document, DocumentValidationResult};
 use crate::errors::AppError;
 
@@ -21,4 +22,12 @@ pub async fn validate_document_file(path: String) -> Result<DocumentValidationRe
     tauri::async_runtime::spawn_blocking(move || validate_document(&path))
         .await
         .map_err(|e| AppError::IoError(format!("Failed to spawn validation thread: {e}")))?
+}
+
+/// Tauri command to safely read the binary contents of a local document file.
+#[tauri::command]
+pub async fn read_document_bytes(path: String) -> Result<Vec<u8>, AppError> {
+    tauri::async_runtime::spawn_blocking(move || domain_read_document_bytes(&path))
+        .await
+        .map_err(|e| AppError::IoError(format!("Failed to spawn reader thread: {e}")))?
 }

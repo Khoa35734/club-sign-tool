@@ -5,12 +5,13 @@
 
 import { createStore } from './createStore';
 import type { DocumentState } from './types';
-import type { DocumentMeta } from '@/types/document';
+import type { DocumentMeta, PageDimensions } from '@/types/document';
 import { createInitialDocumentMeta } from '@/utils/file';
 
 export interface DocumentStoreActions {
   setActiveDocument: (doc: DocumentMeta | null) => void;
   setFilePath: (filePath: string, fileSizeBytes?: number) => void;
+  setDocumentPages: (pages: PageDimensions[]) => void;
   setLoading: (isLoading: boolean) => void;
   setDirty: (isDirty: boolean) => void;
   reset: () => void;
@@ -37,6 +38,22 @@ export const useDocumentStore = createStore<DocumentStore>((set) => ({
       activeDocument: meta,
       isLoading: false,
       isDirty: false,
+    });
+  },
+
+  setDocumentPages: (pages: PageDimensions[]): void => {
+    set((state) => {
+      if (!state.activeDocument) {
+        return state;
+      }
+      return {
+        activeDocument: {
+          ...state.activeDocument,
+          pageCount: pages.length,
+          pages,
+        },
+        isLoading: false,
+      };
     });
   },
 

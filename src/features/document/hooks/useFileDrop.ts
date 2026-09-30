@@ -5,8 +5,9 @@
 
 import { useState, useEffect, useCallback, type DragEvent } from 'react';
 import { useDocumentStore } from '@/stores';
-import { isSupportedDocument } from '@/utils/file';
+import { isSupportedDocument, createDocumentMeta } from '@/utils/file';
 import { validateDocumentFile } from '../services/fileValidationService';
+import { loadPdfDocumentMetadata } from '../services/pdfMetadataService';
 
 export interface UseFileDropResult {
   isDragging: boolean;
@@ -22,6 +23,7 @@ export interface UseFileDropResult {
 export function useFileDrop(): UseFileDropResult {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const setActiveDocument = useDocumentStore((state) => state.setActiveDocument);
   const setFilePath = useDocumentStore((state) => state.setFilePath);
 
   const clearError = useCallback((): void => {
@@ -45,7 +47,17 @@ export function useFileDrop(): UseFileDropResult {
 
       try {
         const validation = await validateDocumentFile(cleanPath);
-        setFilePath(validation.path, validation.fileSizeBytes);
+        if (validation.fileType === 'pdf') {
+          const metadata = await loadPdfDocumentMetadata(validation.path);
+          const doc = createDocumentMeta(
+            validation.path,
+            validation.fileSizeBytes,
+            metadata.pages
+          );
+          setActiveDocument(doc);
+        } else {
+          setFilePath(validation.path, validation.fileSizeBytes);
+        }
         return true;
       } catch (err: unknown) {
         const msg =
@@ -56,7 +68,7 @@ export function useFileDrop(): UseFileDropResult {
         return false;
       }
     },
-    [setFilePath]
+    [setActiveDocument, setFilePath]
   );
 
   const onDragEnter = useCallback((e: DragEvent<HTMLElement>): void => {

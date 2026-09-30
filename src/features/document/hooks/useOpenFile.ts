@@ -6,7 +6,9 @@
 import { useState, useCallback } from 'react';
 import { openDocumentDialog } from '../services/fileDialogService';
 import { validateDocumentFile } from '../services/fileValidationService';
+import { loadPdfDocumentMetadata } from '../services/pdfMetadataService';
 import { useDocumentStore } from '@/stores';
+import { createDocumentMeta } from '@/utils/file';
 
 export interface UseOpenFileResult {
   openFile: () => Promise<string | null>;
@@ -18,6 +20,7 @@ export interface UseOpenFileResult {
 export function useOpenFile(): UseOpenFileResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const setActiveDocument = useDocumentStore((state) => state.setActiveDocument);
   const setFilePath = useDocumentStore((state) => state.setFilePath);
   const setLoading = useDocumentStore((state) => state.setLoading);
 
@@ -34,7 +37,17 @@ export function useOpenFile(): UseOpenFileResult {
       const selectedPath = await openDocumentDialog();
       if (selectedPath) {
         const validation = await validateDocumentFile(selectedPath);
-        setFilePath(validation.path, validation.fileSizeBytes);
+        if (validation.fileType === 'pdf') {
+          const metadata = await loadPdfDocumentMetadata(validation.path);
+          const doc = createDocumentMeta(
+            validation.path,
+            validation.fileSizeBytes,
+            metadata.pages
+          );
+          setActiveDocument(doc);
+        } else {
+          setFilePath(validation.path, validation.fileSizeBytes);
+        }
       }
       return selectedPath;
     } catch (err: unknown) {
@@ -48,7 +61,7 @@ export function useOpenFile(): UseOpenFileResult {
       setIsLoading(false);
       setLoading(false);
     }
-  }, [setFilePath, setLoading]);
+  }, [setActiveDocument, setFilePath, setLoading]);
 
   return {
     openFile,

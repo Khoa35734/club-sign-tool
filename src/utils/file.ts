@@ -3,7 +3,7 @@
  * Reference: docs/SRS.md FR-FILE-001, FR-FILE-002
  */
 
-import type { DocumentMeta, DocumentType } from '@/types/document';
+import type { DocumentMeta, DocumentType, PageDimensions } from '@/types/document';
 import { getFileExtension } from './format';
 
 const SUPPORTED_EXTENSIONS: readonly DocumentType[] = ['pdf', 'docx', 'doc'] as const;
@@ -60,3 +60,20 @@ export function createInitialDocumentMeta(filePath: string, fileSizeBytes = 0): 
     pages: [],
   };
 }
+
+/**
+ * Creates a DocumentMeta record with specified page count and dimensions.
+ */
+export function createDocumentMeta(
+  filePath: string,
+  fileSizeBytes = 0,
+  pages: PageDimensions[] = []
+): DocumentMeta {
+  const meta = createInitialDocumentMeta(filePath, fileSizeBytes);
+  return {
+    ...meta,
+    pageCount: pages.length,
+    pages,
+  };
+}
+
