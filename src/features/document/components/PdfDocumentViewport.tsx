@@ -108,7 +108,7 @@ export function PdfDocumentViewport({
   return (
     <div
       data-testid="pdf-document-viewport-root"
-      className={`flex w-full flex-col items-center gap-4 ${className}`}
+      className={`flex min-h-0 w-full flex-1 flex-col items-center gap-4 ${className}`}
     >
       {/* Viewport Control Bar */}
       <PdfViewportToolbar
@@ -130,7 +130,7 @@ export function PdfDocumentViewport({
       />
 
       {/* Main Viewport Container with Sidebar */}
-      <div className="flex w-full max-w-5xl items-start justify-center gap-4">
+      <div className="flex min-h-0 w-full max-w-5xl flex-1 items-start justify-center gap-4">
         {pages.length > 0 && (
           <PdfThumbnailSidebar
             source={source}
@@ -147,7 +147,7 @@ export function PdfDocumentViewport({
         <div
           ref={scrollContainerRef}
           data-testid="pdf-document-viewport"
-          className="relative flex flex-1 flex-col items-center overflow-y-auto overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-md scroll-smooth max-h-[75vh]"
+          className="relative flex min-h-0 flex-1 flex-col items-center overflow-y-auto overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-md scroll-smooth"
           style={{ scrollBehavior: 'smooth' }}
         >
           {viewMode === 'continuous' ? (
@@ -170,7 +170,7 @@ export function PdfDocumentViewport({
                     dpi={dpi}
                     zoom={effectiveZoom}
                     rotation={page.rotation}
-                    lazy={pages.length > 5 ? page.pageNumber > 2 : false}
+                    lazy={false}
                   />
                 </div>
               ))}

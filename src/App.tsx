@@ -28,7 +28,7 @@ export function App(): JSX.Element {
           buttonLabel="Chọn tệp từ máy"
         />
       ) : (
-        <div className="flex w-full max-w-5xl flex-col items-center">
+        <div className="flex min-h-0 w-full max-w-5xl flex-1 flex-col items-center">
           <div className="mb-6 flex w-full flex-col rounded-xl border border-slate-700 bg-slate-800/80 p-5 shadow-xl backdrop-blur-sm">
             <div className="flex items-center justify-between border-b border-slate-700/60 pb-3">
               <div className="flex items-center gap-2">

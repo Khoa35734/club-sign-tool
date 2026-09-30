@@ -5,16 +5,42 @@
 
 import * as pdfjsLib from 'pdfjs-dist';
 import type { PageDimensions } from '@/types/document';
-import { readDocumentBytes } from './documentReaderService';
+import { getPdfDocument } from './pdfRenderService';
+import { ensurePdfWorkerConfigured } from './pdfWorkerSetup';
 
 export interface PdfMetadataResult {
   pageCount: number;
   pages: PageDimensions[];
 }
 
-import { ensurePdfWorkerConfigured } from './pdfWorkerSetup';
-
 ensurePdfWorkerConfigured();
+
+/**
+ * Extracts page count and page dimensions from an active PDFDocumentProxy.
+ */
+async function extractMetadataFromDoc(
+  pdfDoc: pdfjsLib.PDFDocumentProxy
+): Promise<PdfMetadataResult> {
+  const pageCount = pdfDoc.numPages;
+  const pages: PageDimensions[] = [];
+
+  for (let pageNumber = 1; pageNumber <= pageCount; pageNumber++) {
+    const page = await pdfDoc.getPage(pageNumber);
+    const viewport = page.getViewport({ scale: 1.0 });
+
+    pages.push({
+      pageNumber,
+      widthPt: Math.round(viewport.width * 100) / 100,
+      heightPt: Math.round(viewport.height * 100) / 100,
+      rotation: page.rotate,
+    });
+  }
+
+  return {
+    pageCount,
+    pages,
+  };
+}
 
 /**
  * Parses raw PDF bytes with PDF.js and extracts total page count and page dimensions.
@@ -57,43 +83,22 @@ export async function extractPdfMetadata(
     throw new Error(`Lỗi nạp tài liệu PDF: ${message}`, { cause: err });
   }
 
-  const pageCount = pdfDoc.numPages;
-  const pages: PageDimensions[] = [];
-
-  for (let pageNumber = 1; pageNumber <= pageCount; pageNumber++) {
-    const page = await pdfDoc.getPage(pageNumber);
-    const viewport = page.getViewport({ scale: 1.0 });
-
-    pages.push({
-      pageNumber,
-      widthPt: Math.round(viewport.width * 100) / 100,
-      heightPt: Math.round(viewport.height * 100) / 100,
-      rotation: page.rotate,
-    });
-  }
-
-  return {
-    pageCount,
-    pages,
-  };
+  return extractMetadataFromDoc(pdfDoc);
 }
 
 /**
  * Loads a PDF file from either a local file path or in-memory binary bytes,
  * and extracts its metadata (page count and dimensions).
+ * When given a file path, delegates to getPdfDocument to leverage shared promise caching.
  */
 export async function loadPdfDocumentMetadata(
   source: string | Uint8Array | ArrayBuffer
 ): Promise<PdfMetadataResult> {
-  let bytes: Uint8Array;
-
   if (typeof source === 'string') {
-    bytes = await readDocumentBytes(source);
-  } else if (source instanceof Uint8Array) {
-    bytes = source;
-  } else {
-    bytes = new Uint8Array(source);
+    const pdfDoc = await getPdfDocument(source);
+    return extractMetadataFromDoc(pdfDoc);
   }
 
+  const bytes = source instanceof Uint8Array ? source : new Uint8Array(source);
   return extractPdfMetadata(bytes);
 }

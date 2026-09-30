@@ -5,6 +5,7 @@
  */
 
 import * as pdfjsLib from 'pdfjs-dist';
+import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 let workerConfigured = false;
 
@@ -13,12 +14,9 @@ export function ensurePdfWorkerConfigured(): void {
     return;
   }
 
-  if (typeof window !== 'undefined' && 'Worker' in window) {
+  if (typeof window !== 'undefined') {
     try {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-        'pdfjs-dist/build/pdf.worker.min.mjs',
-        import.meta.url
-      ).toString();
+      pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
       workerConfigured = true;
     } catch {
       // Graceful fallback: PDF.js will run in fake worker mode in the main thread
@@ -28,3 +26,4 @@ export function ensurePdfWorkerConfigured(): void {
 
 // Auto-run on module evaluation
 ensurePdfWorkerConfigured();
+

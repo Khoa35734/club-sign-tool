@@ -33,8 +33,8 @@ export interface RenderPdfPageResult {
   cancelled?: boolean;
 }
 
-// In-memory cache of parsed PDFDocumentProxy keyed by file path or unique string
-const pdfDocumentCache = new Map<string, pdfjsLib.PDFDocumentProxy>();
+// In-memory cache of parsed PDFDocumentProxy promises keyed by file path or unique string
+const pdfDocumentPromiseCache = new Map<string, Promise<pdfjsLib.PDFDocumentProxy>>();
 
 /**
  * Loads and caches a PDFDocumentProxy from file path, Uint8Array or ArrayBuffer.
@@ -45,21 +45,31 @@ export async function getPdfDocument(
   ensurePdfWorkerConfigured();
 
   if (typeof source === 'string') {
-    const cached = pdfDocumentCache.get(source);
-    if (cached) {
-      return cached;
+    const existing = pdfDocumentPromiseCache.get(source);
+    if (existing) {
+      return existing;
     }
 
-    const bytes = await readDocumentBytes(source);
-    const loadingTask = pdfjsLib.getDocument({
-      data: bytes,
-      useSystemFonts: true,
-      isEvalSupported: false,
+    const docPromise = (async () => {
+      const bytes = await readDocumentBytes(source);
+      const loadingTask = pdfjsLib.getDocument({
+        data: bytes,
+        useSystemFonts: true,
+        isEvalSupported: false,
+      });
+      return loadingTask.promise;
+    })();
+
+    pdfDocumentPromiseCache.set(source, docPromise);
+
+    // Evict from cache on failure so retry can re-attempt
+    docPromise.catch(() => {
+      if (pdfDocumentPromiseCache.get(source) === docPromise) {
+        pdfDocumentPromiseCache.delete(source);
+      }
     });
 
-    const doc = await loadingTask.promise;
-    pdfDocumentCache.set(source, doc);
-    return doc;
+    return docPromise;
   }
 
   const data = source instanceof Uint8Array ? source : new Uint8Array(source);
@@ -80,14 +90,16 @@ export async function getPdfDocument(
  * Clears cached PDF documents from memory to prevent memory leaks.
  */
 export function clearPdfDocumentCache(): void {
-  for (const doc of pdfDocumentCache.values()) {
-    try {
-      void doc.destroy();
-    } catch {
-      // Ignore destroy errors during cleanup
-    }
+  for (const promise of pdfDocumentPromiseCache.values()) {
+    void promise.then((doc) => {
+      try {
+        void doc.destroy();
+      } catch {
+        // Ignore destroy errors during cleanup
+      }
+    });
   }
-  pdfDocumentCache.clear();
+  pdfDocumentPromiseCache.clear();
 }
 
 /**

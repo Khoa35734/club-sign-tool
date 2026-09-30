@@ -30,7 +30,7 @@ export function AppShell({
       </header>
 
       {/* Main Workspace Body */}
-      <main className="flex flex-1 items-center justify-center p-6">
+      <main className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto p-4 sm:p-6">
         {children}
       </main>
     </div>
