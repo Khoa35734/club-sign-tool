@@ -59,7 +59,7 @@
   - *Verify:* `EditorObject` type is defined in TypeScript with `x, y, width, height` strictly documented as normalized.
 - [x] `FR-COORD-002` Implement pure conversion functions: `normalizedToScreen` and `screenToNormalized`.
   - *Verify:* Unit tests demonstrate perfect round-trip conversion at 25%, 50%, 100%, 150%, 200%, and 300% zoom levels.
-- [ ] `FR-COORD-003` Implement conversion functions for Native PDF Points (72 DPI, bottom-left origin) needed for export.
+- [x] `FR-COORD-003` Implement conversion functions for Native PDF Points (72 DPI, bottom-left origin) needed for export.
   - *Verify:* Unit tests validate conversions for both Portrait and Landscape page dimensions.
 
 ---

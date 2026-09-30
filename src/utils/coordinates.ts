@@ -10,6 +10,9 @@ import type {
   NormalizedPoint,
   ScreenPoint,
   RenderedPageDimensions,
+  PdfPointCoordinates,
+  PdfPoint,
+  PdfPageDimensionsInput,
 } from '@/types/editor';
 
 /** Small epsilon tolerance for floating-point boundary checks */
@@ -330,4 +333,244 @@ export function screenPointToNormalized(
 
   return { x: rawX, y: rawY };
 }
+
+/**
+ * Converts normalized coordinates [0.0 - 1.0] (top-left origin) to Native PDF Points
+ * (1/72 inch, 72 DPI, bottom-left origin) needed for PDF export and stamping.
+ *
+ * Mathematical Formula (SRS Section 13.2 & ARCHITECTURE.md Section 5.1):
+ * X_pdf = x_norm * W_pdf_pt
+ * Y_pdf = (1.0 - y_norm - height_norm) * H_pdf_pt
+ * Width_pdf = width_norm * W_pdf_pt
+ * Height_pdf = height_norm * H_pdf_pt
+ */
+export function normalizedToPdfPoints(
+  coords: NormalizedCoordinates,
+  pageDimensions: PdfPageDimensionsInput
+): PdfPointCoordinates;
+export function normalizedToPdfPoints(
+  coords: NormalizedCoordinates,
+  widthPt: number,
+  heightPt: number
+): PdfPointCoordinates;
+export function normalizedToPdfPoints(
+  coords: NormalizedCoordinates,
+  dimOrWidth: PdfPageDimensionsInput | number,
+  maybeHeight?: number
+): PdfPointCoordinates {
+  let widthPt = 0;
+  let heightPt = 0;
+
+  if (typeof dimOrWidth === 'number') {
+    widthPt = dimOrWidth;
+    heightPt = typeof maybeHeight === 'number' ? maybeHeight : 0;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    widthPt = 'widthPt' in dimOrWidth ? dimOrWidth.widthPt : dimOrWidth.width;
+    heightPt = 'heightPt' in dimOrWidth ? dimOrWidth.heightPt : dimOrWidth.height;
+  }
+
+  if (widthPt <= 0 || heightPt <= 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+
+  let rawX = coords.x * widthPt;
+  let rawY = (1.0 - coords.y - coords.height) * heightPt;
+
+  // Sanitize near-zero IEEE 754 floating-point drift
+  if (Math.abs(rawX) < 1e-9) rawX = 0;
+  if (Math.abs(rawY) < 1e-9) rawY = 0;
+
+  return {
+    x: rawX,
+    y: rawY,
+    width: coords.width * widthPt,
+    height: coords.height * heightPt,
+  };
+}
+
+/**
+ * Converts Native PDF Points (bottom-left origin) back to normalized coordinates [0.0 - 1.0] (top-left origin).
+ *
+ * Mathematical Formula (SRS Section 13.2 & ARCHITECTURE.md Section 5.1):
+ * x_norm = X_pdf / W_pdf_pt
+ * y_norm = 1.0 - (Y_pdf + Height_pdf) / H_pdf_pt
+ * width_norm = Width_pdf / W_pdf_pt
+ * height_norm = Height_pdf / H_pdf_pt
+ */
+export function pdfPointsToNormalized(
+  pdfCoords: PdfPointCoordinates,
+  pageDimensions: PdfPageDimensionsInput,
+  options?: CoordinateConversionOptions
+): NormalizedCoordinates;
+export function pdfPointsToNormalized(
+  pdfCoords: PdfPointCoordinates,
+  widthPt: number,
+  heightPt: number,
+  options?: CoordinateConversionOptions
+): NormalizedCoordinates;
+export function pdfPointsToNormalized(
+  pdfCoords: PdfPointCoordinates,
+  dimOrWidth: PdfPageDimensionsInput | number,
+  maybeHeightOrOptions?: number | CoordinateConversionOptions,
+  maybeOptions?: CoordinateConversionOptions
+): NormalizedCoordinates {
+  let widthPt = 0;
+  let heightPt = 0;
+  let options: CoordinateConversionOptions | undefined;
+
+  if (typeof dimOrWidth === 'number') {
+    widthPt = dimOrWidth;
+    heightPt = typeof maybeHeightOrOptions === 'number' ? maybeHeightOrOptions : 0;
+    options = maybeOptions;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    widthPt = 'widthPt' in dimOrWidth ? dimOrWidth.widthPt : dimOrWidth.width;
+    heightPt = 'heightPt' in dimOrWidth ? dimOrWidth.heightPt : dimOrWidth.height;
+    if (typeof maybeHeightOrOptions === 'object' && maybeHeightOrOptions !== null) {
+      options = maybeHeightOrOptions;
+    }
+  }
+
+  if (widthPt <= 0 || heightPt <= 0) {
+    return { x: 0, y: 0, width: 0, height: 0 };
+  }
+
+  let rawX = pdfCoords.x / widthPt;
+  let rawY = 1.0 - (pdfCoords.y + pdfCoords.height) / heightPt;
+  let rawW = pdfCoords.width / widthPt;
+  let rawH = pdfCoords.height / heightPt;
+
+  const shouldRound = options?.round ?? true;
+  if (shouldRound) {
+    rawX = roundNormalized(rawX);
+    rawY = roundNormalized(rawY);
+    rawW = roundNormalized(rawW);
+    rawH = roundNormalized(rawH);
+  }
+
+  const result: NormalizedCoordinates = {
+    x: rawX,
+    y: rawY,
+    width: rawW,
+    height: rawH,
+  };
+
+  if (options?.clamp) {
+    return clampNormalizedRect(result);
+  }
+
+  return result;
+}
+
+/**
+ * Converts a normalized single point [0.0 - 1.0] (top-left origin) to Native PDF Points (bottom-left origin).
+ *
+ * Mathematical Formula:
+ * X_pdf = x_norm * W_pdf_pt
+ * Y_pdf = (1.0 - y_norm) * H_pdf_pt
+ */
+export function normalizedPointToPdfPoint(
+  point: NormalizedPoint,
+  pageDimensions: PdfPageDimensionsInput
+): PdfPoint;
+export function normalizedPointToPdfPoint(
+  point: NormalizedPoint,
+  widthPt: number,
+  heightPt: number
+): PdfPoint;
+export function normalizedPointToPdfPoint(
+  point: NormalizedPoint,
+  dimOrWidth: PdfPageDimensionsInput | number,
+  maybeHeight?: number
+): PdfPoint {
+  let widthPt = 0;
+  let heightPt = 0;
+
+  if (typeof dimOrWidth === 'number') {
+    widthPt = dimOrWidth;
+    heightPt = typeof maybeHeight === 'number' ? maybeHeight : 0;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    widthPt = 'widthPt' in dimOrWidth ? dimOrWidth.widthPt : dimOrWidth.width;
+    heightPt = 'heightPt' in dimOrWidth ? dimOrWidth.heightPt : dimOrWidth.height;
+  }
+
+  if (widthPt <= 0 || heightPt <= 0) {
+    return { x: 0, y: 0 };
+  }
+
+  let rawX = point.x * widthPt;
+  let rawY = (1.0 - point.y) * heightPt;
+
+  // Sanitize near-zero IEEE 754 floating-point drift
+  if (Math.abs(rawX) < 1e-9) rawX = 0;
+  if (Math.abs(rawY) < 1e-9) rawY = 0;
+
+  return {
+    x: rawX,
+    y: rawY,
+  };
+}
+
+/**
+ * Converts a Native PDF Point (bottom-left origin) to a normalized point [0.0 - 1.0] (top-left origin).
+ *
+ * Mathematical Formula:
+ * x_norm = X_pdf / W_pdf_pt
+ * y_norm = 1.0 - Y_pdf / H_pdf_pt
+ */
+export function pdfPointToNormalizedPoint(
+  point: PdfPoint,
+  pageDimensions: PdfPageDimensionsInput,
+  options?: CoordinateConversionOptions
+): NormalizedPoint;
+export function pdfPointToNormalizedPoint(
+  point: PdfPoint,
+  widthPt: number,
+  heightPt: number,
+  options?: CoordinateConversionOptions
+): NormalizedPoint;
+export function pdfPointToNormalizedPoint(
+  point: PdfPoint,
+  dimOrWidth: PdfPageDimensionsInput | number,
+  maybeHeightOrOptions?: number | CoordinateConversionOptions,
+  maybeOptions?: CoordinateConversionOptions
+): NormalizedPoint {
+  let widthPt = 0;
+  let heightPt = 0;
+  let options: CoordinateConversionOptions | undefined;
+
+  if (typeof dimOrWidth === 'number') {
+    widthPt = dimOrWidth;
+    heightPt = typeof maybeHeightOrOptions === 'number' ? maybeHeightOrOptions : 0;
+    options = maybeOptions;
+  } else if (typeof dimOrWidth === 'object' && dimOrWidth !== null) {
+    widthPt = 'widthPt' in dimOrWidth ? dimOrWidth.widthPt : dimOrWidth.width;
+    heightPt = 'heightPt' in dimOrWidth ? dimOrWidth.heightPt : dimOrWidth.height;
+    if (typeof maybeHeightOrOptions === 'object' && maybeHeightOrOptions !== null) {
+      options = maybeHeightOrOptions;
+    }
+  }
+
+  if (widthPt <= 0 || heightPt <= 0) {
+    return { x: 0, y: 0 };
+  }
+
+  let rawX = point.x / widthPt;
+  let rawY = 1.0 - point.y / heightPt;
+
+  const shouldRound = options?.round ?? true;
+  if (shouldRound) {
+    rawX = roundNormalized(rawX);
+    rawY = roundNormalized(rawY);
+  }
+
+  if (options?.clamp) {
+    return {
+      x: clampNormalizedCoordinate(rawX),
+      y: clampNormalizedCoordinate(rawY),
+    };
+  }
+
+  return { x: rawX, y: rawY };
+}
+
 

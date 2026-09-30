@@ -13,6 +13,9 @@ export type {
   NormalizedPoint,
   ScreenPoint,
   RenderedPageDimensions,
+  PdfPointCoordinates,
+  PdfPoint,
+  PdfPageDimensionsInput,
 } from './editor';
 export type ObjectType = 'signature' | 'stamp' | 'text' | 'date';
 

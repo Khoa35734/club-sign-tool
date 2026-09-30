@@ -72,6 +72,44 @@ export interface RenderedPageDimensions {
 }
 
 /**
+ * 2D Bounding box in Native PDF Points (1/72 inch, 72 DPI, bottom-left origin).
+ *
+ * CRITICAL EXPORT INVARIANT:
+ * - PDF coordinate system has origin (0,0) at BOTTOM-LEFT corner of page.
+ * - (x, y) specifies the bottom-left corner of the placed object.
+ * - x = distance from left page edge in points.
+ * - y = distance from bottom page edge in points: (1.0 - y_norm - height_norm) * H_pt.
+ * - width & height are in PDF points (pt).
+ */
+export interface PdfPointCoordinates {
+  /** Distance from left edge of page in points (pt) */
+  x: number;
+  /** Distance from bottom edge of page in points (pt) */
+  y: number;
+  /** Width in points (pt) */
+  width: number;
+  /** Height in points (pt) */
+  height: number;
+}
+
+/**
+ * Single 2D point in Native PDF Points (1/72 inch, bottom-left origin).
+ */
+export interface PdfPoint {
+  /** Distance from left edge of page in points (pt) */
+  x: number;
+  /** Distance from bottom edge of page in points (pt) */
+  y: number;
+}
+
+/**
+ * Supported page dimensions input for Native PDF Point operations.
+ */
+export type PdfPageDimensionsInput =
+  | { widthPt: number; heightPt: number }
+  | { width: number; height: number };
+
+/**
  * Valid object types that can be placed on a document page.
  */
 export type EditorObjectType = 'signature' | 'stamp' | 'text' | 'date';
