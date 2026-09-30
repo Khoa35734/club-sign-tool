@@ -1,6 +1,6 @@
 /**
  * PDF Viewport Zoom Controls Component
- * Reference: docs/SRS.md FR-PDF-004 (Zoom 25% to 400%, buttons, slider, reset)
+ * Reference: docs/SRS.md FR-PDF-004, FR-PDF-006 (Zoom 25% to 400%, Fit Page, Fit Width)
  */
 
 import { type JSX, type ChangeEvent } from 'react';
@@ -21,6 +21,8 @@ export interface PdfZoomControlsProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetZoom?: () => void;
+  onFitWidth?: () => void;
+  onFitPage?: () => void;
   showSlider?: boolean;
   className?: string;
 }
@@ -31,6 +33,8 @@ export function PdfZoomControls({
   onZoomIn,
   onZoomOut,
   onResetZoom,
+  onFitWidth,
+  onFitPage,
   showSlider = false,
   className = '',
 }: PdfZoomControlsProps): JSX.Element {
@@ -128,6 +132,36 @@ export function PdfZoomControls({
       >
         +
       </Button>
+
+      {/* Fit Width Button */}
+      {onFitWidth && (
+        <Button
+          variant="ghost"
+          size="sm"
+          data-testid="zoom-fit-width-button"
+          onClick={onFitWidth}
+          title="Vừa chiều rộng (Fit Width)"
+          aria-label="Vừa chiều rộng"
+          className="!px-1.5 !py-0.5 text-[11px] text-slate-300 hover:text-white border-l border-slate-700/60 pl-2 rounded-none"
+        >
+          ↔ Rộng
+        </Button>
+      )}
+
+      {/* Fit Page Button */}
+      {onFitPage && (
+        <Button
+          variant="ghost"
+          size="sm"
+          data-testid="zoom-fit-page-button"
+          onClick={onFitPage}
+          title="Vừa toàn bộ trang (Fit Page)"
+          aria-label="Vừa toàn bộ trang"
+          className="!px-1.5 !py-0.5 text-[11px] text-slate-300 hover:text-white"
+        >
+          ⛶ Trang
+        </Button>
+      )}
     </div>
   );
 }

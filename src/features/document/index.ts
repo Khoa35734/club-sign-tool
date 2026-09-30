@@ -14,6 +14,7 @@ export * from './hooks/useFileDrop';
 export * from './hooks/usePdfPageRenderer';
 export * from './hooks/useZoomWheel';
 export * from './hooks/useViewportScrollObserver';
+export * from './hooks/usePdfFitZoom';
 export * from './components/DropZone';
 export * from './components/PdfPageView';
 export * from './components/PdfViewportToolbar';

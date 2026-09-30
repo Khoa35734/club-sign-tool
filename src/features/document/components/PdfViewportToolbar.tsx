@@ -22,6 +22,8 @@ export interface PdfViewportToolbarProps {
   onZoomIn?: () => void;
   onZoomOut?: () => void;
   onResetZoom?: () => void;
+  onFitWidth?: () => void;
+  onFitPage?: () => void;
   className?: string;
 }
 
@@ -38,6 +40,8 @@ export function PdfViewportToolbar({
   onZoomIn,
   onZoomOut,
   onResetZoom,
+  onFitWidth,
+  onFitPage,
   className = '',
 }: PdfViewportToolbarProps): JSX.Element {
   const [pageInput, setPageInput] = useState(String(currentPage));
@@ -124,6 +128,8 @@ export function PdfViewportToolbar({
           onZoomIn={onZoomIn}
           onZoomOut={onZoomOut}
           onResetZoom={onResetZoom}
+          onFitWidth={onFitWidth}
+          onFitPage={onFitPage}
         />
       )}
 

@@ -46,7 +46,7 @@
   - *Verify:* Thumbnails load efficiently; clicking a thumbnail scrolls the main viewport to that page.
 - [x] `FR-PDF-004` Add Zoom controls (25% to 400%).
   - *Verify:* Canvas scales appropriately via buttons and `Ctrl + Scroll`.
-- [ ] `FR-PDF-004`, `FR-PDF-006` Implement "Fit Page", "Fit Width", and mixed page size (Portrait/Landscape) layout support.
+- [x] `FR-PDF-004`, `FR-PDF-006` Implement "Fit Page", "Fit Width", and mixed page size (Portrait/Landscape) layout support.
   - *Verify:* Different sized pages center correctly within the viewport.
 
 ### Milestone M1 — PDF Viewer Usable

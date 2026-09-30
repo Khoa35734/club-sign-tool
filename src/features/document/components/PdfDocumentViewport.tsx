@@ -11,6 +11,7 @@ import { PdfThumbnailSidebar } from './PdfThumbnailSidebar';
 import { useEditorStore } from '@/stores';
 import { useViewportScrollObserver } from '../hooks/useViewportScrollObserver';
 import { useZoomWheel } from '../hooks/useZoomWheel';
+import { usePdfFitZoom } from '../hooks/usePdfFitZoom';
 import { MIN_PDF_RENDER_DPI } from '@/utils/pdfRender';
 
 export interface PdfDocumentViewportProps {
@@ -90,6 +91,14 @@ export function PdfDocumentViewport({
     enabled: true,
   });
 
+  // Hook: Fit Width and Fit Page zoom calculations (FR-PDF-004, FR-PDF-006)
+  const { handleFitWidth, handleFitPage } = usePdfFitZoom({
+    containerRef: scrollContainerRef,
+    currentPage,
+    pages,
+    onZoomChange: setZoomLevel,
+  });
+
   const activeSinglePage = pages.find((p) => p.pageNumber === currentPage) ?? pages[0] ?? {
     pageNumber: 1,
     widthPt: 595.28,
@@ -115,6 +124,8 @@ export function PdfDocumentViewport({
         onZoomIn={storeZoomIn}
         onZoomOut={storeZoomOut}
         onResetZoom={storeResetZoom}
+        onFitWidth={handleFitWidth}
+        onFitPage={handleFitPage}
         className="w-full max-w-4xl"
       />
 
@@ -136,13 +147,13 @@ export function PdfDocumentViewport({
         <div
           ref={scrollContainerRef}
           data-testid="pdf-document-viewport"
-          className="relative flex flex-1 flex-col items-center overflow-y-auto overflow-x-hidden rounded-xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-md scroll-smooth max-h-[75vh]"
+          className="relative flex flex-1 flex-col items-center overflow-y-auto overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/80 p-6 shadow-2xl backdrop-blur-md scroll-smooth max-h-[75vh]"
           style={{ scrollBehavior: 'smooth' }}
         >
           {viewMode === 'continuous' ? (
             <div
               data-testid="continuous-page-list"
-              className="flex w-full flex-col items-center gap-8 py-2"
+              className="flex w-full min-w-full flex-col items-center gap-8 py-2"
             >
               {pages.map((page) => (
                 <div
