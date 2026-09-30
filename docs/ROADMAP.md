@@ -44,7 +44,7 @@
   - *Verify:* User can scroll through a multi-page PDF.
 - [x] `FR-PDF-002`, `FR-PDF-003` Implement lazy-rendered page thumbnails sidebar.
   - *Verify:* Thumbnails load efficiently; clicking a thumbnail scrolls the main viewport to that page.
-- [ ] `FR-PDF-004` Add Zoom controls (25% to 400%).
+- [x] `FR-PDF-004` Add Zoom controls (25% to 400%).
   - *Verify:* Canvas scales appropriately via buttons and `Ctrl + Scroll`.
 - [ ] `FR-PDF-004`, `FR-PDF-006` Implement "Fit Page", "Fit Width", and mixed page size (Portrait/Landscape) layout support.
   - *Verify:* Different sized pages center correctly within the viewport.

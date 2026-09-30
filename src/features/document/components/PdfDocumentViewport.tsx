@@ -1,14 +1,16 @@
 /**
- * Multi-Page Vertical Scrolling Document Viewport with Thumbnail Sidebar
- * Reference: docs/SRS.md FR-PDF-002, FR-PDF-003, FR-PDF-005 & .agents/rules/pdf-editor.md
+ * Multi-Page Vertical Scrolling Document Viewport with Thumbnail Sidebar & Zoom
+ * Reference: docs/SRS.md FR-PDF-002, FR-PDF-003, FR-PDF-004, FR-PDF-005 & .agents/rules/pdf-editor.md
  */
 
-import { useState, useRef, useEffect, useCallback, type JSX } from 'react';
+import { useState, useRef, useCallback, type JSX } from 'react';
 import type { PageDimensions } from '@/types/document';
 import { PdfPageView } from './PdfPageView';
 import { PdfViewportToolbar, type ViewportMode } from './PdfViewportToolbar';
 import { PdfThumbnailSidebar } from './PdfThumbnailSidebar';
 import { useEditorStore } from '@/stores';
+import { useViewportScrollObserver } from '../hooks/useViewportScrollObserver';
+import { useZoomWheel } from '../hooks/useZoomWheel';
 import { MIN_PDF_RENDER_DPI } from '@/utils/pdfRender';
 
 export interface PdfDocumentViewportProps {
@@ -27,7 +29,7 @@ export function PdfDocumentViewport({
   pages,
   initialPage = 1,
   dpi = MIN_PDF_RENDER_DPI,
-  zoom = 1.0,
+  zoom,
   showSidebar = true,
   className = '',
   onActivePageChange,
@@ -37,8 +39,16 @@ export function PdfDocumentViewport({
   const [isSidebarOpen, setIsSidebarOpen] = useState(showSidebar);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
-  const setActivePageIndex = useEditorStore((state) => state.setActivePageIndex);
 
+  // Global Editor State
+  const setActivePageIndex = useEditorStore((state) => state.setActivePageIndex);
+  const zoomLevel = useEditorStore((state) => state.zoomLevel);
+  const setZoomLevel = useEditorStore((state) => state.setZoomLevel);
+  const storeZoomIn = useEditorStore((state) => state.zoomIn);
+  const storeZoomOut = useEditorStore((state) => state.zoomOut);
+  const storeResetZoom = useEditorStore((state) => state.resetZoom);
+
+  const effectiveZoom = zoom !== undefined ? zoom : zoomLevel;
   const totalPages = pages.length > 0 ? pages.length : 1;
 
   // Handle active page update and viewport scrolling
@@ -62,58 +72,23 @@ export function PdfDocumentViewport({
     [totalPages, viewMode, setActivePageIndex, onActivePageChange]
   );
 
-  // Track active page during continuous vertical scrolling
-  useEffect(() => {
-    if (viewMode !== 'continuous' || typeof IntersectionObserver === 'undefined') {
-      return;
-    }
+  // Hook: Track active page during continuous vertical scrolling
+  useViewportScrollObserver({
+    containerRef: scrollContainerRef,
+    totalPages,
+    enabled: viewMode === 'continuous',
+    onPageChange: (pageNum) => {
+      setCurrentPage(pageNum);
+      setActivePageIndex(pageNum - 1);
+      onActivePageChange?.(pageNum);
+    },
+  });
 
-    const container = scrollContainerRef.current;
-    if (!container) {
-      return;
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        let bestEntry: IntersectionObserverEntry | null = null;
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            if (!bestEntry || entry.intersectionRatio > bestEntry.intersectionRatio) {
-              bestEntry = entry;
-            }
-          }
-        }
-
-        if (bestEntry?.target) {
-          const pageAttr = bestEntry.target.getAttribute('data-page-number');
-          if (pageAttr) {
-            const pageNum = parseInt(pageAttr, 10);
-            if (!isNaN(pageNum)) {
-              setCurrentPage(pageNum);
-              setActivePageIndex(pageNum - 1);
-              onActivePageChange?.(pageNum);
-            }
-          }
-        }
-      },
-      {
-        root: container,
-        threshold: [0.1, 0.3, 0.6],
-        rootMargin: '-50px 0px -50px 0px',
-      }
-    );
-
-    for (let i = 1; i <= totalPages; i++) {
-      const el = document.getElementById(`pdf-page-${i}`);
-      if (el) {
-        observer.observe(el);
-      }
-    }
-
-    return () => {
-      observer.disconnect();
-    };
-  }, [viewMode, totalPages, setActivePageIndex, onActivePageChange]);
+  // Hook: Ctrl + Wheel / Ctrl + Scroll zooming on viewport
+  useZoomWheel({
+    containerRef: scrollContainerRef,
+    enabled: true,
+  });
 
   const activeSinglePage = pages.find((p) => p.pageNumber === currentPage) ?? pages[0] ?? {
     pageNumber: 1,
@@ -135,6 +110,11 @@ export function PdfDocumentViewport({
         onViewModeChange={setViewMode}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
+        zoom={effectiveZoom}
+        onZoomChange={setZoomLevel}
+        onZoomIn={storeZoomIn}
+        onZoomOut={storeZoomOut}
+        onResetZoom={storeResetZoom}
         className="w-full max-w-4xl"
       />
 
@@ -177,7 +157,7 @@ export function PdfDocumentViewport({
                     widthPt={page.widthPt}
                     heightPt={page.heightPt}
                     dpi={dpi}
-                    zoom={zoom}
+                    zoom={effectiveZoom}
                     rotation={page.rotation}
                     lazy={true}
                   />
@@ -195,7 +175,7 @@ export function PdfDocumentViewport({
                 widthPt={activeSinglePage.widthPt}
                 heightPt={activeSinglePage.heightPt}
                 dpi={dpi}
-                zoom={zoom}
+                zoom={effectiveZoom}
                 rotation={activeSinglePage.rotation}
                 lazy={false}
               />

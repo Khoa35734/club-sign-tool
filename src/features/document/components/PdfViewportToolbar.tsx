@@ -1,10 +1,11 @@
 /**
- * PDF Viewport Navigation & Mode Toolbar Component
- * Reference: docs/SRS.md FR-PDF-003, FR-PDF-005
+ * PDF Viewport Navigation, Mode & Zoom Toolbar Component
+ * Reference: docs/SRS.md FR-PDF-003, FR-PDF-004, FR-PDF-005
  */
 
 import { useState, type JSX, type ChangeEvent, type FormEvent } from 'react';
 import { Button } from '@/components/Button';
+import { PdfZoomControls } from './PdfZoomControls';
 
 export type ViewportMode = 'continuous' | 'single';
 
@@ -16,6 +17,11 @@ export interface PdfViewportToolbarProps {
   onViewModeChange: (newMode: ViewportMode) => void;
   isSidebarOpen?: boolean;
   onToggleSidebar?: () => void;
+  zoom?: number;
+  onZoomChange?: (newZoom: number) => void;
+  onZoomIn?: () => void;
+  onZoomOut?: () => void;
+  onResetZoom?: () => void;
   className?: string;
 }
 
@@ -27,6 +33,11 @@ export function PdfViewportToolbar({
   onViewModeChange,
   isSidebarOpen = true,
   onToggleSidebar,
+  zoom,
+  onZoomChange,
+  onZoomIn,
+  onZoomOut,
+  onResetZoom,
   className = '',
 }: PdfViewportToolbarProps): JSX.Element {
   const [pageInput, setPageInput] = useState(String(currentPage));
@@ -51,7 +62,7 @@ export function PdfViewportToolbar({
   return (
     <div
       data-testid="pdf-viewport-toolbar"
-      className={`flex items-center justify-between gap-3 rounded-lg border border-slate-700/80 bg-slate-800/90 px-4 py-2 shadow-md backdrop-blur-sm ${className}`}
+      className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-700/80 bg-slate-800/90 px-4 py-2 shadow-md backdrop-blur-sm ${className}`}
     >
       {/* Left controls: Sidebar toggle & View Mode */}
       <div className="flex items-center gap-2">
@@ -104,6 +115,17 @@ export function PdfViewportToolbar({
           </button>
         </div>
       </div>
+
+      {/* Center controls: Zoom Controls */}
+      {zoom !== undefined && onZoomChange && (
+        <PdfZoomControls
+          zoom={zoom}
+          onZoomChange={onZoomChange}
+          onZoomIn={onZoomIn}
+          onZoomOut={onZoomOut}
+          onResetZoom={onResetZoom}
+        />
+      )}
 
       {/* Right controls: Page Navigation & Indicator */}
       <div
