@@ -38,7 +38,7 @@
 ### Phase 2 — PDF Viewer Core
 - [x] `FR-PDF-001` Integrate PDF.js to load a local PDF file and extract total page count and page dimensions.
   - *Verify:* App state correctly reflects the page count and dimensions of the opened PDF.
-- [ ] `FR-PDF-001` Render the first PDF page onto a canvas at high resolution (min 150 DPI).
+- [x] `FR-PDF-001` Render the first PDF page onto a canvas at high resolution (min 150 DPI).
   - *Verify:* PDF page visually renders.
 - [ ] `FR-PDF-005` Implement vertical scrolling and multi-page rendering for the document viewport.
   - *Verify:* User can scroll through a multi-page PDF.

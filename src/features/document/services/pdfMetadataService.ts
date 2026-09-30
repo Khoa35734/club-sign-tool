@@ -12,17 +12,9 @@ export interface PdfMetadataResult {
   pages: PageDimensions[];
 }
 
-// In browser/WebView2 environments, configure the worker to point to the local bundled worker
-if (typeof window !== 'undefined' && 'Worker' in window) {
-  try {
-    pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-      'pdfjs-dist/build/pdf.worker.min.mjs',
-      import.meta.url
-    ).toString();
-  } catch {
-    // Graceful fallback: PDF.js will run in fake worker mode in the main thread
-  }
-}
+import { ensurePdfWorkerConfigured } from './pdfWorkerSetup';
+
+ensurePdfWorkerConfigured();
 
 /**
  * Parses raw PDF bytes with PDF.js and extracts total page count and page dimensions.
