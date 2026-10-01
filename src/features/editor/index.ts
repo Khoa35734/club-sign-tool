@@ -4,3 +4,5 @@
  */
 
 export * from './components/PdfEditorOverlay';
+export * from './components/MockEditorObject';
+export * from './utils/mockObject';

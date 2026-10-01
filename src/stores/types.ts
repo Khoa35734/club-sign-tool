@@ -4,7 +4,7 @@
  */
 
 import type {
-  CanvasPlacementObject,
+  EditorObject,
   DocumentMeta,
   AssetMetadata,
   AppSettings,
@@ -19,7 +19,7 @@ export interface DocumentState {
 
 export interface EditorState {
   activePageIndex: number;
-  objects: CanvasPlacementObject[];
+  objects: EditorObject[];
   selectedObjectId: string | null;
   zoomLevel: number; // 0.25 to 4.0 (1.0 = 100%)
   canUndo: boolean;

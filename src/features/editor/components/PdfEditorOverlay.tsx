@@ -8,6 +8,8 @@ import { useCallback, type JSX, type ReactNode, type Ref } from 'react';
 import { Stage, Layer } from 'react-konva';
 import type Konva from 'konva';
 import { useEditorStore } from '@/stores';
+import type { EditorObject } from '@/types/editor';
+import { MockEditorObject } from './MockEditorObject';
 
 export interface PdfEditorOverlayProps {
   /** 1-based page number */
@@ -20,6 +22,8 @@ export interface PdfEditorOverlayProps {
   height: number;
   /** Current viewport zoom factor */
   zoom?: number;
+  /** Optional custom objects array override (defaults to objects in useEditorStore) */
+  objects?: EditorObject[];
   /** Optional custom class name for overlay container */
   className?: string;
   /** Konva shapes or custom overlay nodes rendered inside Konva Layer */
@@ -40,6 +44,7 @@ export function PdfEditorOverlay({
   width,
   height,
   zoom = 1.0,
+  objects,
   className = '',
   children,
   stageRef,
@@ -48,8 +53,17 @@ export function PdfEditorOverlay({
   testId = 'pdf-editor-overlay',
 }: PdfEditorOverlayProps): JSX.Element {
   const resolvedPageIndex = pageIndex !== undefined ? pageIndex : Math.max(0, pageNumber - 1);
+  const storeObjects = useEditorStore((state) => state.objects);
+  const selectedObjectId = useEditorStore((state) => state.selectedObjectId);
   const setSelectedObjectId = useEditorStore((state) => state.setSelectedObjectId);
   const setActivePageIndex = useEditorStore((state) => state.setActivePageIndex);
+
+  // Filter objects belonging to this page
+  const displayObjects =
+    objects ??
+    storeObjects.filter(
+      (obj) => obj.pageIndex === resolvedPageIndex || obj.pageNumber === pageNumber
+    );
 
   const handleStageMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>): void => {
@@ -95,7 +109,19 @@ export function PdfEditorOverlay({
           backgroundColor: 'transparent',
         }}
       >
-        <Layer data-testid="pdf-editor-overlay-layer">{children}</Layer>
+        <Layer data-testid="pdf-editor-overlay-layer">
+          {displayObjects.map((obj) => (
+            <MockEditorObject
+              key={obj.id}
+              object={obj}
+              stageWidth={width}
+              stageHeight={height}
+              isSelected={selectedObjectId === obj.id}
+              onSelect={(id) => setSelectedObjectId(id)}
+            />
+          ))}
+          {children}
+        </Layer>
       </Stage>
     </div>
   );

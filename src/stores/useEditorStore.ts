@@ -7,6 +7,8 @@ import { createStore } from './createStore';
 import type { EditorState } from './types';
 import { clampZoom, zoomIn, zoomOut, DEFAULT_ZOOM } from '@/utils/zoom';
 
+import type { EditorObject } from '@/types';
+
 export interface EditorStoreActions {
   setActivePageIndex: (index: number) => void;
   setZoomLevel: (zoom: number) => void;
@@ -14,6 +16,10 @@ export interface EditorStoreActions {
   zoomOut: (step?: number) => void;
   resetZoom: () => void;
   setSelectedObjectId: (id: string | null) => void;
+  addObject: (object: EditorObject) => void;
+  updateObject: (id: string, updates: Partial<EditorObject>) => void;
+  removeObject: (id: string) => void;
+  setObjects: (objects: EditorObject[]) => void;
   reset: () => void;
 }
 
@@ -56,6 +62,29 @@ export const useEditorStore = createStore<EditorStore>((set, get) => ({
 
   setSelectedObjectId: (selectedObjectId: string | null): void => {
     set({ selectedObjectId });
+  },
+
+  addObject: (object: EditorObject): void => {
+    set((state) => ({
+      objects: [...state.objects, object],
+    }));
+  },
+
+  updateObject: (id: string, updates: Partial<EditorObject>): void => {
+    set((state) => ({
+      objects: state.objects.map((obj) => (obj.id === id ? { ...obj, ...updates } : obj)),
+    }));
+  },
+
+  removeObject: (id: string): void => {
+    set((state) => ({
+      objects: state.objects.filter((obj) => obj.id !== id),
+      selectedObjectId: state.selectedObjectId === id ? null : state.selectedObjectId,
+    }));
+  },
+
+  setObjects: (objects: EditorObject[]): void => {
+    set({ objects });
   },
 
   reset: (): void => {
