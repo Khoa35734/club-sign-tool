@@ -69,7 +69,7 @@
   - *Verify:* Overlay perfectly matches PDF dimensions and updates on zoom/resize.
 - [x] `FR-EDITOR-BASE` Implement rendering of a generic mock object (colored rectangle) using the normalized coordinate state.
   - *Verify:* Mock object stays pinned to the correct document location during zoom and window resize.
-- [ ] `FR-EDITOR-BASE` Implement object selection, dragging, and resizing controls (Konva Transformer).
+- [x] `FR-EDITOR-BASE` Implement object selection, dragging, and resizing controls (Konva Transformer).
   - *Verify:* Dragging/resizing the object updates the Zustand store with new *normalized* coordinates.
 
 ### Milestone M2 — Editor Coordinate System Stable

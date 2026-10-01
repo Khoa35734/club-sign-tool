@@ -5,4 +5,5 @@
 
 export * from './components/PdfEditorOverlay';
 export * from './components/MockEditorObject';
+export * from './hooks/useMockObjectTransform';
 export * from './utils/mockObject';

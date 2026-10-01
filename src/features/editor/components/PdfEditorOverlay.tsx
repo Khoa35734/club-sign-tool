@@ -32,6 +32,8 @@ export interface PdfEditorOverlayProps {
   stageRef?: Ref<Konva.Stage>;
   /** Callback fired when user clicks/taps on empty stage background */
   onDeselect?: () => void;
+  /** Callback fired when an object finishes transformation or dragging */
+  onObjectTransformEnd?: (id: string, updates: Partial<EditorObject>) => void;
   /** Direct mouse down event handler on Konva Stage */
   onStageMouseDown?: (e: Konva.KonvaEventObject<MouseEvent | TouchEvent>) => void;
   /** Custom test ID attribute */
@@ -49,6 +51,7 @@ export function PdfEditorOverlay({
   children,
   stageRef,
   onDeselect,
+  onObjectTransformEnd,
   onStageMouseDown,
   testId = 'pdf-editor-overlay',
 }: PdfEditorOverlayProps): JSX.Element {
@@ -57,6 +60,7 @@ export function PdfEditorOverlay({
   const selectedObjectId = useEditorStore((state) => state.selectedObjectId);
   const setSelectedObjectId = useEditorStore((state) => state.setSelectedObjectId);
   const setActivePageIndex = useEditorStore((state) => state.setActivePageIndex);
+  const updateObject = useEditorStore((state) => state.updateObject);
 
   // Filter objects belonging to this page
   const displayObjects =
@@ -118,6 +122,13 @@ export function PdfEditorOverlay({
               stageHeight={height}
               isSelected={selectedObjectId === obj.id}
               onSelect={(id) => setSelectedObjectId(id)}
+              onTransformEnd={(id, updates) => {
+                if (onObjectTransformEnd) {
+                  onObjectTransformEnd(id, updates);
+                } else {
+                  updateObject(id, updates);
+                }
+              }}
             />
           ))}
           {children}
