@@ -65,7 +65,7 @@
 ---
 
 ### Phase 4 — Generic Editor Object Model
-- [ ] `FR-EDITOR-BASE` Implement a transparent Konva.js stage overlaid precisely on top of the PDF canvas.
+- [x] `FR-EDITOR-BASE` Implement a transparent Konva.js stage overlaid precisely on top of the PDF canvas.
   - *Verify:* Overlay perfectly matches PDF dimensions and updates on zoom/resize.
 - [ ] `FR-EDITOR-BASE` Implement rendering of a generic mock object (colored rectangle) using the normalized coordinate state.
   - *Verify:* Mock object stays pinned to the correct document location during zoom and window resize.

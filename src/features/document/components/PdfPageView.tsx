@@ -9,6 +9,7 @@ import { usePdfPageRenderer } from '../hooks/usePdfPageRenderer';
 import type { RenderPdfPageResult } from '../services/pdfRenderService';
 import { Button } from '@/components/Button';
 import { MIN_PDF_RENDER_DPI } from '@/utils/pdfRender';
+import { PdfEditorOverlay } from '@/features/editor';
 
 export interface PdfPageViewProps {
   source: string | Uint8Array | pdfjsLib.PDFDocumentProxy | null;
@@ -20,6 +21,14 @@ export interface PdfPageViewProps {
   rotation?: number;
   lazy?: boolean;
   className?: string;
+  showOverlay?: boolean;
+  renderOverlay?: (dimensions: {
+    width: number;
+    height: number;
+    pageNumber: number;
+    pageIndex: number;
+    zoom: number;
+  }) => JSX.Element | null;
   onRenderSuccess?: (result: RenderPdfPageResult) => void;
   onRenderError?: (error: Error) => void;
 }
@@ -33,6 +42,8 @@ export function PdfPageView({
   zoom = 1.0,
   rotation,
   lazy = false,
+  showOverlay = true,
+  renderOverlay,
   className = '',
   onRenderSuccess,
   onRenderError,
@@ -121,18 +132,39 @@ export function PdfPageView({
         }}
       >
         {shouldRender ? (
-          <canvas
-            ref={canvasRef}
-            data-testid="pdf-page-canvas"
-            role="img"
-            aria-label={`Trang ${pageNumber} của tài liệu PDF`}
-            className="block bg-white transition-opacity duration-150"
-            style={{
-              width: `${displayWidth}px`,
-              height: `${displayHeight}px`,
-              maxWidth: '100%',
-            }}
-          />
+          <>
+            <canvas
+              ref={canvasRef}
+              data-testid="pdf-page-canvas"
+              role="img"
+              aria-label={`Trang ${pageNumber} của tài liệu PDF`}
+              className="block bg-white transition-opacity duration-150"
+              style={{
+                width: `${displayWidth}px`,
+                height: `${displayHeight}px`,
+                maxWidth: '100%',
+              }}
+            />
+            {/* Transparent Konva.js Editor Overlay Stage (FR-EDITOR-BASE) */}
+            {showOverlay &&
+              (renderOverlay ? (
+                renderOverlay({
+                  width: displayWidth,
+                  height: displayHeight,
+                  pageNumber,
+                  pageIndex: pageNumber - 1,
+                  zoom,
+                })
+              ) : (
+                <PdfEditorOverlay
+                  pageNumber={pageNumber}
+                  pageIndex={pageNumber - 1}
+                  width={displayWidth}
+                  height={displayHeight}
+                  zoom={zoom}
+                />
+              ))}
+          </>
         ) : (
           <div
             data-testid="pdf-page-placeholder"
